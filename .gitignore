@@ -1,0 +1,32 @@
+# Local Python environments
+mlops-workshop-env/
+.venv/
+venv/
+
+# Python and notebooks
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Generated MLflow state (local only)
+mlruns/
+mlartifacts/
+mlflow.db
+mlflow.db-*
+mlflow.db.*
+
+# Secrets and local configuration
+.env
+.env.*
+.aws/
+
+# Editor and system temporary files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.log

@@ -1,0 +1,5 @@
+# Direct dependencies for the MLflow notebook; Airflow comes later.
+mlflow==3.17.0
+scikit-learn==1.9.1
+pandas==3.0.6
+ipykernel==7.4.0
