@@ -16,7 +16,7 @@ SQLite is included with Python. You do not need to install it or start a databas
 
 ### 1. Prepare the environment
 
-Complete [Python environment setup](03-python-setup.md). Keep a terminal open at the project root with `mlops-workshop-env` activated.
+Complete [Python environment setup](01-python-setup.md). Keep a terminal open at the project root with `mlops-workshop-env` activated.
 
 ### 2. Create the local MLflow records
 

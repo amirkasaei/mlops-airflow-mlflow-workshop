@@ -1,33 +1,39 @@
 # mlops-airflow-mlflow-workshop
 
-A minimal workshop about **Airflow orchestration** and **MLflow experiment tracking and model lifecycle**. After a brief recap, we raise the problem: manual model runs are hard to coordinate, compare, and trace.
+A minimal workshop about Airflow orchestration and MLflow experiment tracking and model lifecycle. After a brief recap, we address a practical problem: manual model runs are hard to coordinate, compare, and trace.
 
-## Workshop flow
+## Current checkpoint
 
-Introduce the Airflow DAG and its task order. Implement each task, logging training results to MLflow. Compare accuracy, register the winner, and assign `candidate`. Then run the complete DAG and inspect its results in MLflow.
+- **Airflow examples:** separate workflows demonstrate success, failure, retry, parallel tasks, parameters, and a 20-second schedule.
+- **Main Airflow workflow:** `iris_model_selection` currently runs `load_data -> split_data` as Python tasks.
+- **MLflow notebook:** the complete reference trains two classifiers on Iris, compares accuracy, registers the winner, and assigns `candidate`.
 
-The ML stays simple: Iris, Logistic Regression, and Random Forest. The existing notebook provides a reference for the training and MLflow operations.
+The main DAG does not yet execute notebooks or train models. Next, finalize the notebook-based design and its execution dependency before adding that integration.
 
 ## Structure
 
 ```text
-requirements.txt   MLflow notebook dependencies
-notebooks/         Reference notebook
-dags/              Airflow workshop DAG
-docs/              Setup and workshop guides
+dags/model_selection.py         Main Iris workflow
+dags/demos/                     Separate Airflow teaching examples
+notebooks/01_mlflow_basics.ipynb MLflow reference notebook
+docs/                           Setup and walkthroughs
+requirements.txt                Notebook dependencies
 ```
 
 ## Quick start
 
-Open this folder in VS Code. Start with [Airflow setup for Windows, Linux, or macOS](docs/01-airflow-setup.md). Then follow [the first DAG task](docs/02-airflow-dag.md). Currently, only `load_data` is implemented; later steps will add splitting, training, comparison, and registration.
+Open the project folder in VS Code. Begin with [Python setup](docs/01-python-setup.md), then follow [Airflow setup](docs/02-airflow-setup.md), then inspect the main workflow using [the DAG and UI guide](docs/03-airflow-dag.md). Use [the meeting walkthrough](docs/04-airflow-demo.md) to run the examples one at a time.
+
+In Airflow, filter by `workshop-main` for the project or `workshop-demo` for the teaching examples. Pause the scheduling example when finished.
+
+## Guides
 
 | Order | Guide |
 | --- | --- |
-| 1 | [Airflow setup](docs/01-airflow-setup.md) |
-| 2 | [First DAG task](docs/02-airflow-dag.md) |
-| 3 | [Notebook Python setup](docs/03-python-setup.md) |
-| 4 | [MLflow setup](docs/04-mlflow-setup.md) |
-| 5 | [MLflow workflow reference](docs/05-mlflow-workflow.md) |
-| 6 | [Model Registry](docs/06-model-registry.md) |
-
-Current checkpoint: `load_data` has run successfully in Airflow. The next task to add is `split_data`. The complete MLflow notebook remains a reference; its training and registration steps have not yet been integrated into the DAG.
+| 1 | [Python setup and environments](docs/01-python-setup.md) |
+| 2 | [Airflow setup: Windows, Linux, and macOS](docs/02-airflow-setup.md) |
+| 3 | [Define tasks, connect them, and use the UI](docs/03-airflow-dag.md) |
+| 4 | [Meeting examples and expected results](docs/04-airflow-demo.md) |
+| 5 | [MLflow storage and UI](docs/05-mlflow-setup.md) |
+| 6 | [MLflow notebook walkthrough](docs/06-mlflow-workflow.md) |
+| 7 | [Model Registry and candidate alias](docs/07-model-registry.md) |

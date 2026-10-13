@@ -8,16 +8,16 @@ Learn how MLflow records training attempts and helps select a model.
 
 The code is in `notebooks/01_mlflow_basics.ipynb`. It loads Iris, trains Logistic Regression and Random Forest, records both runs, compares accuracy, and registers the winner.
 
-Use this notebook as a reference while implementing the corresponding Airflow tasks. The workshop starts with the DAG and introduces these MLflow operations as each task is built.
+This notebook currently runs manually. The workshop starts with Airflow examples, then introduces MLflow inside the project workflow. Executing focused notebooks as Airflow tasks is the proposed next design; that integration is not implemented yet.
 
 ## How to proceed
 
-1. Complete [Python setup](03-python-setup.md) and [MLflow setup](04-mlflow-setup.md).
+1. Complete [Python setup](01-python-setup.md) and [MLflow setup](05-mlflow-setup.md).
 2. Open the notebook and select the `mlops-workshop-env` kernel.
 3. Run the imports cell, then **Find the project folder** and **Configure tracking**, using Shift+Enter.
 4. Pause and understand where MLflow stores its records before continuing.
 5. Continue with **Select the experiment**, then one section at a time: run, parameters, metrics, logged model, second run, comparison, and selection.
-6. Read [Model Registry](06-model-registry.md) when you reach registration.
+6. Read [Model Registry](07-model-registry.md) when you reach registration.
 
 Use the actual notebook cells for code. No additional terminal commands are needed here. During the guided walkthrough, wait until the current section is understood before running the next section.
 

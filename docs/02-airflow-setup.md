@@ -152,7 +152,7 @@ A fresh installation creates the `admin` login and a generated password. If star
 cat ~/mlops-airflow-workshop/airflow/simple_auth_manager_passwords.json.generated
 ```
 
-After adding the [first task](02-airflow-dag.md), `iris_model_selection` appears in the DAG list.
+With the project files present, `iris_model_selection` appears with the `workshop-main` tag. The separate examples have the `workshop-demo` tag. See the [DAG guide](03-airflow-dag.md) and [meeting walkthrough](04-airflow-demo.md).
 
 ## Important notes
 

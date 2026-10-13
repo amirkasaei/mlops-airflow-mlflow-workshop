@@ -2,9 +2,32 @@
 
 ## Purpose
 
-Use a local environment for notebook dependencies and select that same environment in VS Code.
+Check Python first, understand our environments, and prepare the notebook environment in VS Code. Both Airflow and MLflow execute Python code.
 
-This guide is for the reference notebook. Airflow uses the separate Airflow environment described in [Airflow setup](01-airflow-setup.md).
+## Check Python first
+
+Use Python 3.12, 3.13, or 3.14 for this workshop. If Python is missing, install one of these versions from [Python.org](https://www.python.org/downloads/) or your Linux distribution's package manager.
+
+**Windows PowerShell:**
+
+```powershell
+python --version
+```
+
+**Linux/macOS:**
+
+```sh
+python3 --version
+```
+
+## Which environment is used?
+
+| Environment | Location | Purpose |
+| --- | --- | --- |
+| Notebook | `mlops-workshop-env/` in the project folder | Run notebook cells using the VS Code kernel |
+| Airflow | `~/mlops-airflow-workshop/mlops-workshop-env` | Run DAG tasks; on Windows this environment is inside WSL |
+
+The commands below prepare the notebook environment. The next guide, [Airflow setup](02-airflow-setup.md), prepares its separate environment in WSL, Linux, or macOS. A Windows environment cannot be reused inside WSL.
 
 ## What is configured
 
