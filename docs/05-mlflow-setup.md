@@ -1,47 +1,41 @@
-# MLflow setup
+# Open MLflow locally
 
 ## Purpose
 
-Save training results locally and view them in your browser.
+View the experiment records created by the main project. SQLite stores records in `mlflow.db`; model files live under `mlartifacts/`. MLflow creates the database automatically.
 
-## What we use
+## Start the UI
 
-- **SQLite** stores MLflow records in one file: `mlflow.db`.
-- **MLflow UI** is the browser interface for viewing those records.
-- Saved model files go into `mlartifacts/`, separately from the database.
+Run the main Airflow project first using [guide 08](08-main-project.md). In a second terminal at the project root, activate the **Airflow/notebook environment used to execute the pipeline**.
 
-SQLite is included with Python. You do not need to install it or start a database server. MLflow creates the database file and its tables automatically.
+**Windows:** enter Ubuntu WSL first. **Linux/macOS:** use your terminal directly. The following command is the same in those terminals:
 
-## Steps
-
-### 1. Prepare the environment
-
-Complete [Python environment setup](01-python-setup.md). Keep a terminal open at the project root with `mlops-workshop-env` activated.
-
-### 2. Create the local MLflow records
-
-Open `notebooks/01_mlflow_basics.ipynb` with that environment selected as its kernel. Run the imports cell, then the cells under **Find the project folder**, **Configure tracking**, and **Select the experiment**.
-
-These setup cells tell MLflow to use `mlflow.db` in the project root and create or select the experiment `iris-model-comparison`. They print the database location and experiment name. No model has been trained by this step.
-
-### 3. Start the browser interface
-
-From the activated project-root terminal, run this command on Windows, Linux, or macOS:
+```sh
+source ~/mlops-airflow-workshop/mlops-workshop-env/bin/activate
+```
 
 ```sh
 python -m mlflow ui --backend-store-uri sqlite:///mlflow.db --host 127.0.0.1 --port 5000
 ```
 
-This starts the UI using the same `mlflow.db` file. `127.0.0.1` means your own computer; `5000` is the port used by the browser.
+Leave that terminal open. Open [http://localhost:5000](http://localhost:5000) in your normal browser. Ctrl+C stops this foreground UI without deleting experiment records.
 
-### 4. Open MLflow
+## Find this project's experiment
 
-Leave the command running and open [http://127.0.0.1:5000](http://127.0.0.1:5000).
+1. Select **Model training** at the top of the sidebar if MLflow opens in GenAI mode.
+2. Open **Experiments** and choose **iris-pipeline-comparison**.
+3. Open **Runs** to see Logistic Regression and Random Forest.
+
+![MLflow pipeline experiment and its two runs](images/mlflow-experiment.png)
 
 ## Expected result
 
-Under **Experiments**, you should see `iris-model-comparison`. Training runs will appear as you execute the later notebook cells; refresh the browser to see updates.
+After a complete pipeline run, both training attempts appear with accuracy, model parameters, saved artifacts, and a `workflow_run_id` tag. [Guide 06](06-mlflow-workflow.md) explains what these records mean.
 
 ## Important notes
 
-Run the UI command from the project root so it opens the correct database. Keep its terminal open; Ctrl+C stops the UI without deleting results. If the page cannot open, check that the command is still running and has not reported an error. If this project's UI already opens, reuse it instead of starting a second server.
+On Windows, start this UI inside WSL for the Airflow project. Its model artifact URIs are Linux paths. Starting a Windows-native UI against those records can display metadata while failing to resolve artifact files. Use the same runtime platform for notebook execution and artifact inspection.
+
+Always launch from the project root so the relative database path matches the notebooks' absolute URI. If the address cannot connect, check that the UI is running and inspect its terminal. If port 5000 is occupied by this project's UI, reuse it.
+
+The optional `notebooks/mlflow/01_mlflow_basics.ipynb` reference uses different experiment/model names. It is not a required preliminary lesson; the main notebooks teach MLflow as they run.

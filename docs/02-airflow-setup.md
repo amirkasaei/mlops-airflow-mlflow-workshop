@@ -144,6 +144,9 @@ airflow standalone
 
 ## Expected result
 
+![Airflow login page](images/airflow-login.png)
+
+
 Leave the terminal running and open [http://localhost:8080](http://localhost:8080) in your normal browser on Windows, Linux, or macOS.
 
 A fresh installation creates the `admin` login and a generated password. If startup does not show it, open a second WSL/Linux/macOS terminal and read:
@@ -158,6 +161,6 @@ With the project files present, `iris_model_selection` appears with the `worksho
 
 The Airflow environment and runtime files live under your home directory. Airflow creates its own local SQLite database for orchestration state; this is separate from MLflow's experiment database.
 
-Reuse an already running workshop instance instead of starting a second one. Ctrl+C stops a foreground instance. Repeat activation and the exports in each new terminal. Task dependencies are installed in this Airflow environment as the workflow is built.
+Reuse an already running workshop instance instead of starting a second one. Ctrl+C stops a foreground instance. Repeat activation and the exports in each new terminal. The main notebook workflow also needs `requirements-airflow.txt` and its registered kernel. Follow [the project setup steps](08-main-project.md) before triggering that DAG.
 
 The current runtime and task were tested on Ubuntu 24.04 under WSL2. Native Linux and macOS instructions follow Airflow's supported setup, but have not been executed on separate machines here.

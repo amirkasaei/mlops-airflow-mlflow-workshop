@@ -27,11 +27,11 @@ python3 --version
 | Notebook | `mlops-workshop-env/` in the project folder | Run notebook cells using the VS Code kernel |
 | Airflow | `~/mlops-airflow-workshop/mlops-workshop-env` | Run DAG tasks; on Windows this environment is inside WSL |
 
-The commands below prepare the notebook environment. The next guide, [Airflow setup](02-airflow-setup.md), prepares its separate environment in WSL, Linux, or macOS. A Windows environment cannot be reused inside WSL.
+The commands below prepare a local notebook environment, including Papermill. [Airflow setup](02-airflow-setup.md) prepares its separate environment. For the main pipeline, [guide 08](08-main-project.md) installs the same notebook dependencies in the Airflow environment and registers its kernel. On Windows, execute project notebooks in WSL so their artifact paths match Airflow; the Windows environment remains useful for the optional reference notebook.
 
 ## What is configured
 
-The environment is named `mlops-workshop-env` and is excluded from Git. Dependencies are MLflow, scikit-learn, pandas, and ipykernel. Use Python 3.12, 3.13, or 3.14 for a consistent workshop setup; the current notebook was validated on Python 3.14.2.
+The environment is named `mlops-workshop-env` and is excluded from Git. Dependencies are MLflow, scikit-learn, pandas, ipykernel, and Papermill. Use Python 3.12, 3.13, or 3.14 for a consistent workshop setup; the current notebook was validated on Python 3.14.2.
 
 ## Commands
 

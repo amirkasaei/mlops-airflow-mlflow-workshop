@@ -1,0 +1,4 @@
+# Install Airflow with its official constraints first (see the setup guide).
+# Keep its version pinned when installing the notebook dependencies afterward.
+apache-airflow==3.3.2
+-r requirements.txt
