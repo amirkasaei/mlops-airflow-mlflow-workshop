@@ -22,7 +22,7 @@ Run the examples yourself during rehearsal: predict the task order, trigger the 
 | `demo_04_parallel` | [parallel.py](../dags/demos/parallel.py) | Two independent jobs can overlap; the last task waits for both |
 | `demo_05_parameters` | [parameters.py](../dags/demos/parameters.py) | A name entered in the trigger form becomes a message passed between tasks |
 | `demo_06_scheduled` | [scheduled.py](../dags/demos/scheduled.py) | New runs appear automatically after unpausing |
-| `iris_model_selection` | [model_selection.py](../dags/project/iris_model_selection.py) | The real Iris dataset passes from loading to splitting |
+| `iris_model_selection` | [iris_model_selection.py](../dags/project/iris_model_selection.py) | Five notebooks train, compare, register, and verify the selected model |
 
 ## Repeat these UI steps for each manual example
 
@@ -58,7 +58,7 @@ This sample always fails on purpose. Rerunning it produces the same outcome. The
 
 ![Retry example: inspect the task attempt count and each attempt's logs.](images/airflow-demo-retry.png)
 
-Trigger `demo_03_retry`. Open `temporary_failure` and watch its state become **Up for retry** after its first attempt fails. Its code permits one retry after 20 seconds.
+Trigger `demo_03_retry`. Open `temporary_failure` and watch its state become **Up for retry** after its first attempt fails. Its code permits one retry after 5 seconds.
 
 The next attempt prints `Attempt number: 2` and succeeds. The final task then runs. Inspect the first and second log attempts to compare the error and recovery. Scheduling can add a little time to the retry delay.
 

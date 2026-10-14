@@ -1,6 +1,6 @@
 # Explain model registration and tracing
 
-Use this guide after comparing the models. All excerpts come from [05_register_candidate.ipynb](../notebooks/project/05_register_candidate.ipynb), which Airflow runs as **register_candidate**. The full notebook remains the runnable source.
+Use this guide after comparing the models. All excerpts come from [05_register_candidate.ipynb](../notebooks/05_register_candidate.ipynb), which Airflow runs as **register_candidate**. The full notebook remains the runnable source.
 
 ## 1. Register the already trained winner
 
@@ -9,6 +9,8 @@ Use this guide after comparing the models. All excerpts come from [05_register_c
 After reading winner.json and checking its execution ID:
 
 ```python
+# Register the saved winner.
+# This creates a numbered version without fitting the model again.
 model_version = mlflow.register_model(winner["model_uri"], registered_model_name)
 print("Registered model:", model_version.name)
 print("Version:", model_version.version)
@@ -21,8 +23,12 @@ print("Version:", model_version.version)
 **Purpose:** provide a stable name for the selected version.
 
 ```python
+# Select the candidate version.
+# The alias is a stable name that can point to a different version after a later run.
 client.set_registered_model_alias(
-    name=registered_model_name, alias="candidate", version=model_version.version
+    name=registered_model_name,
+    alias="candidate",
+    version=model_version.version,
 )
 candidate = client.get_model_version_by_alias(registered_model_name, "candidate")
 print("Candidate version:", candidate.version)
@@ -52,18 +58,31 @@ From the notebook's verification cell (after importing MLflow sklearn and accura
 candidate_uri = f"models:/{registered_model_name}@candidate"
 X_test = pd.DataFrame(split["X_test"], columns=split["feature_names"], dtype="float64")
 
-# Each Airflow notebook has its own process: select the trace storage experiment.
+# Choose where to store the trace.
+# This notebook has a separate Python process, so it selects the experiment
+# explicitly.
 mlflow.set_experiment(experiment_name)
 
-# Link this verification trace to the winner without reopening its training run.
-with mlflow.start_span(name="verify_candidate", run_id=winner["run_id"]) as verification:
-    verification.set_inputs({"model_uri": candidate_uri, "version": str(candidate.version)})
+# Trace candidate verification.
+# The root span links to the winning run; nested spans time loading and prediction.
+with mlflow.start_span(
+    name="verify_candidate",
+    run_id=winner["run_id"],
+) as verification:
+    verification.set_inputs(
+        {
+            "model_uri": candidate_uri,
+            "version": str(candidate.version),
+        },
+    )
     mlflow.update_current_trace(tags={"workflow_run_id": split["execution_id"]})
 
     with mlflow.start_span(name="load_candidate") as loading:
         loading.set_inputs({"model_uri": candidate_uri})
         candidate_model = mlflow.sklearn.load_model(candidate_uri)
-        # Store model identity rather than serializing a Python model into the trace.
+        # Record which model was loaded.
+        # The trace needs its version and source run; the model itself is already a
+        # saved artifact.
         loading.set_outputs({
             "model_type": winner["model_type"],
             "version": str(candidate.version),
@@ -71,7 +90,8 @@ with mlflow.start_span(name="verify_candidate", run_id=winner["run_id"]) as veri
         })
 
     with mlflow.start_span(name="predict_candidate") as predicting:
-        # Iris is public and tiny: record the actual rows and predictions.
+        # Record the prediction inputs and outputs.
+        # The small public Iris batch can be inspected directly in the trace viewer.
         predicting.set_inputs({"rows": X_test.to_dict(orient="records")})
         candidate_predictions = candidate_model.predict(X_test)
         predicting.set_outputs({"predictions": candidate_predictions.tolist()})
@@ -79,10 +99,15 @@ with mlflow.start_span(name="verify_candidate", run_id=winner["run_id"]) as veri
     candidate_accuracy = accuracy_score(split["y_test"], candidate_predictions)
     assert candidate.run_id == winner["run_id"]
     assert candidate_accuracy == winner["accuracy"]
-    verification.set_outputs({"accuracy": candidate_accuracy, "verified": True})
+    verification.set_outputs({
+        "accuracy": candidate_accuracy,
+        "verified": True,
+    })
 
 trace_id = verification.trace_id
-# Finish exporting the trace before the notebook task exits.
+# Finish saving the trace.
+# Flush pending writes so the completed Airflow task leaves its trace available in
+# MLflow.
 mlflow.flush_trace_async_logging()
 ```
 

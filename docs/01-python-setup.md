@@ -27,11 +27,11 @@ python3 --version
 | Notebook | `mlops-workshop-env/` in the project folder | Run notebook cells using the VS Code kernel |
 | Airflow | `~/mlops-airflow-workshop/mlops-workshop-env` | Run DAG tasks; on Windows this environment is inside WSL |
 
-The commands below prepare a local notebook environment, including Papermill. [Airflow setup](02-airflow-setup.md) prepares its separate environment. For the main pipeline, [guide 08](08-main-project.md) installs the same notebook dependencies in the Airflow environment and registers its kernel. On Windows, execute project notebooks in WSL so their artifact paths match Airflow; the Windows environment remains useful for the optional reference notebook.
+The commands below prepare a local notebook environment, including Papermill. [Airflow setup](02-airflow-setup.md) prepares its separate environment. For the main pipeline, [guide 08](08-main-project.md) installs the same notebook dependencies in the Airflow environment and registers its kernel. On Windows, execute project notebooks in WSL so their artifact paths match Airflow.
 
 ## What is configured
 
-The environment is named `mlops-workshop-env` and is excluded from Git. Dependencies are MLflow, scikit-learn, pandas, ipykernel, and Papermill. Use Python 3.12, 3.13, or 3.14 for a consistent workshop setup; the current notebook was validated on Python 3.14.2.
+The environment is named `mlops-workshop-env` and is excluded from Git. Dependencies are MLflow, scikit-learn, pandas, ipykernel, Papermill, and matplotlib. Use Python 3.12, 3.13, or 3.14 for a consistent workshop setup; the current notebook was validated on Python 3.14.2.
 
 ## Commands
 
@@ -75,7 +75,7 @@ If PowerShell blocks activation, install through the environment's Python direct
 
 ## Expected result
 
-The printed interpreter path points inside `mlops-workshop-env`. In VS Code, install the Microsoft Python and Jupyter extensions. Use **Python: Select Interpreter** to select this environment, then open the notebook and choose **Select Kernel > Python Environments > mlops-workshop-env**. Its first cell prints the interpreter and package versions.
+The printed interpreter path points inside `mlops-workshop-env`. In VS Code, install the Microsoft Python and Jupyter extensions. Use **Python: Select Interpreter** to select this environment, then open the notebook and choose **Select Kernel > Python Environments > mlops-workshop-env**. In the project notebooks, the connection cell prints the run folder; select the Linux kernel described in guide 08 when running them in WSL.
 
 ## Important notes
 

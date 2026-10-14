@@ -6,7 +6,7 @@ Let Airflow coordinate five notebook executions while the notebooks train, compa
 
 ## Files and task order
 
-| Notebook under notebooks/project/ | Airflow task | Result |
+| Notebook under notebooks/ | Airflow task | Result |
 | --- | --- | --- |
 | `01_load_and_split.ipynb` | `load_and_split` | `split.json`, 120 training rows and 30 test rows |
 | `02_train_logistic.ipynb` | `train_logistic` | MLflow run/model and `logistic_result.json` |
@@ -92,7 +92,7 @@ The training notebooks log parameters, training/test accuracy and log loss at ev
 
 You can open the project notebooks and run them in order using their defaults. They share `outputs/manual/`. Always rerun the data notebook and both models before comparison; the execution ID guard rejects stale results.
 
-On Windows, open the project in a VS Code WSL window and select the Linux Airflow environment/kernel for manual execution of these project notebooks. The SQLite records contain artifact locations for that runtime platform. Windows-native execution remains suitable for the optional reference notebook using its own experiment.
+On Windows, open the project in a VS Code WSL window and select the Linux Airflow environment/kernel for manual execution of these project notebooks. The SQLite records contain artifact locations for that runtime platform. Keep manual execution in that same WSL environment so artifact locations stay consistent.
 
 Manual execution can create MLflow runs, but Airflow only monitors executions it starts. Use its UI for the integrated workshop demonstration.
 

@@ -7,10 +7,13 @@ from airflow.sdk import dag, task
 
 @dag(
     dag_id="demo_06_scheduled",
-    schedule=timedelta(seconds=20),  # Make a run eligible every 20 seconds.
+    # Let the scheduler create periodic runs; no manual trigger is required.
+    schedule=timedelta(seconds=20),
     start_date=datetime(2025, 1, 1, tzinfo=timezone.utc),
-    catchup=False,  # Do not create runs for every interval since the start date.
-    is_paused_upon_creation=True,  # Students explicitly enable this demonstration.
+    # Start with current intervals rather than all intervals since start_date.
+    catchup=False,
+    # Keep the demo paused until students explicitly enable scheduling.
+    is_paused_upon_creation=True,
     max_active_runs=1,
     tags=["workshop-demo"],
 )

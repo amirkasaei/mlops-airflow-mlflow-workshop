@@ -14,7 +14,9 @@ from airflow.sdk import dag, get_current_context, task
     tags=["workshop-demo"],
 )
 def retry_demo():
-    # One retry means up to two attempts. Wait long enough to observe Up for retry.
+    # Allow recovery from a temporary failure.
+    # One retry means two attempts in total, with five seconds before the retry is
+    # eligible.
     @task(retries=1, retry_delay=timedelta(seconds=5))
     def temporary_failure():
         context = get_current_context()

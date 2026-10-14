@@ -21,14 +21,17 @@ from airflow.sdk import Param, dag, get_current_context, task
 def parameters_demo():
     @task(retries=0)
     def make_message():
-        # Read the name entered in this run's trigger form.
+        # Read the trigger parameter.
+        # Airflow places this run's Student name value in the task context.
         context = get_current_context()
         name = context["params"]["student_name"]
         return f"Hello, {name}!"
 
     @task(retries=0)
     def display_message(message):
-        # Airflow supplies the first task's returned message as this argument.
+        # Consume the previous task's output.
+        # Airflow retrieves the returned greeting through XCom and passes it as
+        # message.
         print(message)
 
     message = make_message()

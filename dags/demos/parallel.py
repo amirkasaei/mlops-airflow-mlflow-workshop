@@ -22,7 +22,9 @@ def parallel_demo():
     @task(retries=0)
     def job_a():
         print("Job A started.")
-        sleep(8)  # Simulate work so overlapping execution is visible.
+        # Simulate work.
+        # The delay lets students compare the two jobs' execution times.
+        sleep(8)
         print("Job A finished.")
 
     @task(retries=0)

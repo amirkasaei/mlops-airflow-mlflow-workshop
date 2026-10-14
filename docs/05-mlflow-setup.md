@@ -6,9 +6,9 @@ View the experiment records created by the main project. SQLite stores records i
 
 ## Start the UI
 
-Run the main Airflow project first using [guide 08](08-main-project.md). In a second terminal at the project root, activate the **Airflow/notebook environment used to execute the pipeline**.
+Start this UI in a second terminal at the project root and activate the **Airflow/notebook environment used to execute the pipeline**. Existing records appear without another training run. For a fresh checkout with no records, execute the main project using [guide 08](08-main-project.md).
 
-**Windows:** enter Ubuntu WSL first. **Linux/macOS:** use your terminal directly. The following command is the same in those terminals:
+**Windows:** in the new PowerShell tab, enter WSL using the Linux account that owns the Airflow environment, wait for the Ubuntu prompt, then enter the project folder inside Ubuntu. Repeat this for every new PowerShell tab. **Linux/macOS:** use your terminal directly. Run the activation command below only after you are in that Linux/macOS shell:
 
 ```sh
 source ~/mlops-airflow-workshop/mlops-workshop-env/bin/activate
@@ -37,5 +37,3 @@ After a complete pipeline run, both training attempts appear with accuracy, mode
 On Windows, start this UI inside WSL for the Airflow project. Its model artifact URIs are Linux paths. Starting a Windows-native UI against those records can display metadata while failing to resolve artifact files. Use the same runtime platform for notebook execution and artifact inspection.
 
 Always launch from the project root so the relative database path matches the notebooks' absolute URI. If the address cannot connect, check that the UI is running and inspect its terminal. If port 5000 is occupied by this project's UI, reuse it.
-
-The optional `notebooks/mlflow/01_mlflow_basics.ipynb` reference uses different experiment/model names. It is not a required preliminary lesson; the main notebooks teach MLflow as they run.

@@ -38,7 +38,9 @@ def success_demo():
     @task(retries=0)
     def first_task():
         print("First task is running.")
-        sleep(3)  # Give students time to notice the Running state.
+        # Simulate a short job.
+        # The delay makes the Running state visible during the demonstration.
+        sleep(3)
         print("First task finished.")
 
     @task(retries=0)
@@ -47,7 +49,8 @@ def success_demo():
         sleep(3)
         print("Second task finished.")
 
-    # The arrow sets the execution order.
+    # Set the task order.
+    # second_task becomes eligible only after first_task succeeds.
     first_task() >> second_task()
 
 

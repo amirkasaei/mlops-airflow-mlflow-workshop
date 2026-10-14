@@ -42,7 +42,7 @@ From a PowerShell terminal in the project folder, enter Ubuntu:
 wsl -d Ubuntu-24.04
 ```
 
-All remaining commands run **inside Ubuntu**. The Windows notebook environment cannot be reused in WSL. Windows files are accessible under `/mnt/c`.
+Wait until the terminal shows an Ubuntu prompt such as `name@...:...$` or `root@...:...#`. If it still shows `PS C:\...>`, you are still in PowerShell. All remaining commands run **inside Ubuntu**. The Windows notebook environment cannot be reused in WSL. Windows files are accessible under `/mnt/c`.
 
 Reference: [Microsoft WSL installation](https://learn.microsoft.com/en-us/windows/wsl/install).
 
@@ -103,6 +103,8 @@ airflow version
 Expected: `3.3.2`. Skip installation if this version is already available in your Airflow environment.
 
 ## Start Airflow: same commands on all three platforms
+
+After the environment is installed, repeat the startup steps below after each shutdown. Environment creation and dependency installation are one-time setup steps.
 
 In your WSL/Linux/macOS terminal, enter the project folder containing `dags/`. Check the current directory:
 

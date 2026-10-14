@@ -20,14 +20,16 @@ def failure_demo():
 
     @task(retries=0)
     def fail_on_purpose():
-        # An unhandled exception marks this task Failed.
+        # Demonstrate task failure.
+        # An exception stops this task; printing an error alone would not fail it.
         raise ValueError("Intentional workshop failure: this task always fails.")
 
     @task(retries=0)
     def finish():
         print("This cannot run because its required upstream task failed.")
 
-    # finish keeps the default rule: all upstream tasks must succeed.
+    # Require successful upstream tasks.
+    # The default rule prevents finish from executing after the intentional failure.
     prepare() >> fail_on_purpose() >> finish()
 
 

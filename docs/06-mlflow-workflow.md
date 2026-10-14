@@ -8,11 +8,11 @@ Airflow starts a notebook task. Scikit-learn trains a model. Our notebook calcul
 
 | Notebook | Purpose |
 | --- | --- |
-| [01_load_and_split](../notebooks/project/01_load_and_split.ipynb) | Shared Iris split and MLflow experiment |
-| [02_train_logistic](../notebooks/project/02_train_logistic.ipynb) | Logistic regression trained with SGD; epoch histories |
-| [03_train_random_forest](../notebooks/project/03_train_random_forest.ipynb) | Random Forest; histories as trees are added |
-| [04_compare_models](../notebooks/project/04_compare_models.ipynb) | Compare final metrics and select the winner |
-| [05_register_candidate](../notebooks/project/05_register_candidate.ipynb) | Register, assign candidate, reload, and trace verification |
+| [01_load_and_split](../notebooks/01_load_and_split.ipynb) | Shared Iris split and MLflow experiment |
+| [02_train_logistic](../notebooks/02_train_logistic.ipynb) | Logistic regression trained with SGD; epoch histories |
+| [03_train_random_forest](../notebooks/03_train_random_forest.ipynb) | Random Forest; histories as trees are added |
+| [04_compare_models](../notebooks/04_compare_models.ipynb) | Compare final metrics and select the winner |
+| [05_register_candidate](../notebooks/05_register_candidate.ipynb) | Register, assign candidate, reload, and trace verification |
 
 ## 1. Connect to MLflow and choose an experiment
 
@@ -37,6 +37,7 @@ if client.get_experiment_by_name(experiment_name) is None:
         experiment_name,
         artifact_location=(project_path / "mlartifacts" / "pipeline").as_uri(),
     )
+
 experiment = mlflow.set_experiment(experiment_name)
 ```
 
@@ -54,14 +55,25 @@ From notebook 02, after defining its classifier:
 
 ```python
 with mlflow.start_run(run_name="logistic-regression") as run:
+
+    # Record the training settings.
+    # MLflow parameters explain which configuration produced this run.
     mlflow.log_params({
-        "model_type": "LogisticRegressionSGD", "estimator": "SGDClassifier",
-        "loss": classifier.loss, "epochs": epochs,
-        "learning_rate": classifier.learning_rate, "eta0": classifier.eta0,
-        "alpha": classifier.alpha, "scaler": "StandardScaler",
+        "model_type": "LogisticRegressionSGD",
+        "estimator": "SGDClassifier",
+        "loss": classifier.loss,
+        "epochs": epochs,
+        "learning_rate": classifier.learning_rate,
+        "eta0": classifier.eta0,
+        "alpha": classifier.alpha,
+        "scaler": "StandardScaler",
         "random_state": split["random_state"],
-        "test_size": split["test_size"], "dataset": "iris",
+        "test_size": split["test_size"],
+        "dataset": "iris",
     })
+
+    # Link the model run to Airflow.
+    # This tag contains the workflow execution ID shown in the Airflow UI.
     mlflow.set_tag("workflow_run_id", split["execution_id"])
     mlflow.set_tag("progress_unit", "epoch")
 ```
@@ -82,7 +94,9 @@ Notebook 02 constructs logistic regression with SGD:
 
 ```python
 classifier = SGDClassifier(
-    loss="log_loss", learning_rate="constant", eta0=0.02,
+    loss="log_loss",
+    learning_rate="constant",
+    eta0=0.02,
     random_state=split["random_state"],
 )
 model = make_pipeline(scaler, classifier)
@@ -95,19 +109,28 @@ The training loop from notebook 02:
 
 ```python
 for step in range(1, epochs + 1):
-    # One partial_fit call makes one pass over the training rows.
+    # Train one epoch.
+    # partial_fit updates the existing classifier using one pass through the training
+    # rows.
     started = perf_counter()
     classifier.partial_fit(X_train_scaled, y_train, classes=[0, 1, 2])
     training_seconds += perf_counter() - started
-    # Evaluate the model at this training checkpoint.
+
+    # Evaluate the current model.
+    # Training and held-out scores show how its predictions change as training
+    # progresses.
     train_predictions = model.predict(X_train)
     predictions = model.predict(X_test)
     train_accuracy = accuracy_score(y_train, train_predictions)
     test_accuracy = accuracy_score(y_test, predictions)
-    train_log_loss = log_loss(y_train, model.predict_proba(X_train), labels=model.classes_)
-    test_log_loss = log_loss(y_test, model.predict_proba(X_test), labels=model.classes_)
+    train_probabilities = model.predict_proba(X_train)
+    test_probabilities = model.predict_proba(X_test)
 
-    # Send numeric history immediately, before the next training step.
+    train_log_loss = log_loss(y_train, train_probabilities, labels=model.classes_)
+    test_log_loss = log_loss(y_test, test_probabilities, labels=model.classes_)
+
+    # Track this checkpoint.
+    # Reusing metric names with a new step lets MLflow build training curves.
     metrics = {
         "train_accuracy": train_accuracy,
         "test_accuracy": test_accuracy,
@@ -180,12 +203,16 @@ mlflow.log_dict({
 The same notebook saves a confusion matrix:
 
 ```python
-# Save an evaluation plot: rows are actual classes, columns are predictions.
+# Save the test confusion matrix.
+# Rows show actual classes and columns show predictions; off-diagonal counts are
+# mistakes.
 plot = ConfusionMatrixDisplay.from_predictions(
-    y_test, predictions,
+    y_test,
+    predictions,
     labels=model.classes_,
     display_labels=load_iris().target_names,
-    cmap="Blues", colorbar=False,
+    cmap="Blues",
+    colorbar=False,
 )
 plot.ax_.set_title("Logistic Regression - test predictions")
 plot.figure_.tight_layout()
@@ -230,14 +257,21 @@ This model page can show **No metrics recorded** because our numeric metrics wer
 After checking matching execution IDs, notebook 04 reads MLflow:
 
 ```python
-# Read the logged metrics from MLflow; test accuracy still determines the winner.
+# Read the completed training runs.
+# Their metric dictionaries contain the final values stored by MLflow.
 logistic_run = client.get_run(logistic_result["run_id"])
 forest_run = client.get_run(forest_result["run_id"])
-assert logistic_run.info.status == "FINISHED" and forest_run.info.status == "FINISHED"
-comparison = pd.DataFrame([
-    {**logistic_result, **logistic_run.data.metrics},
-    {**forest_result, **forest_run.data.metrics},
-])
+assert logistic_run.info.status == "FINISHED"
+assert forest_run.info.status == "FINISHED"
+# Build the comparison rows.
+# copy keeps the original handoff intact; update adds the model's saved metrics.
+logistic_row = logistic_result.copy()
+logistic_row.update(logistic_run.data.metrics)
+
+forest_row = forest_result.copy()
+forest_row.update(forest_run.data.metrics)
+
+comparison = pd.DataFrame([logistic_row, forest_row])
 comparison[[
     "model_type", "train_accuracy", "test_accuracy",
     "train_log_loss", "test_log_loss", "training_seconds",
@@ -249,14 +283,15 @@ comparison[[
 The winner selection from the same notebook:
 
 ```python
-winner = comparison.loc[comparison["accuracy"].idxmax()].to_dict()
+winner_index = comparison["test_accuracy"].idxmax()
+winner = comparison.loc[winner_index].to_dict()
 (run_path / "winner.json").write_text(json.dumps(winner, indent=2), encoding="utf-8")
 print("Winner:", winner["model_type"])
 print("Accuracy:", winner["accuracy"])
 print("Source run:", winner["run_id"])
 ```
 
-`idxmax` selects the highest final test accuracy. The `accuracy` key is exactly the same value as `test_accuracy`. A tie picks the first row, Logistic Regression. `winner.json` passes the source run and saved model URI to the registration task; it does not retrain the model.
+`idxmax` selects the highest final test accuracy. Selection uses the explicitly named `test_accuracy` column. The `accuracy` key remains an identical compatibility value for verification. A tie picks the first row, Logistic Regression. `winner.json` passes the source run and saved model URI to the registration task; it does not retrain the model.
 
 **In MLflow:** return to Runs, tick the two rows with the same `workflow_run_id`, then click **Compare**. Scroll to Metrics to inspect final test accuracy, train/test loss, and duration. Collapsing Visualizations and Parameters makes the results table easier to show. The current completed example has approximately **0.833** test accuracy for SGD logistic regression and **0.900** for Random Forest, so Random Forest wins.
 
@@ -270,4 +305,5 @@ Continue with [the registry and tracing guide](07-model-registry.md), which pair
 
 Parameters are settings. Metrics are numeric measurements and histories. Artifacts are saved files. Registered versions identify saved models. Traces record instrumented execution steps, inputs/outputs, timing, and errors.
 
-Manual notebook execution can log to MLflow but creates no Airflow run. Use [the main project walkthrough](08-main-project.md) to execute the integrated workshop. Old runs retain the records their code originally logged; a new code change does not update them retroactively. The optional [single-notebook reference](../notebooks/mlflow/01_mlflow_basics.ipynb) is not a required preliminary lesson.
+
+Manual notebook execution can record MLflow results but creates no Airflow task instance. Use [the main project walkthrough](08-main-project.md) for integrated execution. Older runs retain their original records; code changes do not update them retroactively.
