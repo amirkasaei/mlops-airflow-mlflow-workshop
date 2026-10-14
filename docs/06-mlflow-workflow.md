@@ -283,15 +283,29 @@ comparison[[
 The winner selection from the same notebook:
 
 ```python
-winner_index = comparison["test_accuracy"].idxmax()
-winner = comparison.loc[winner_index].to_dict()
+run_filter = (
+    f"attributes.run_id IN ('{logistic_result['run_id']}', "
+    f"'{forest_result['run_id']}') AND attributes.status = 'FINISHED'"
+)
+assert logistic_run.info.experiment_id == forest_run.info.experiment_id
+ranked_runs = client.search_runs(
+    experiment_ids=[logistic_run.info.experiment_id],
+    filter_string=run_filter,
+    order_by=["metrics.test_accuracy DESC", "params.model_type ASC"],
+    max_results=1,
+)
+assert ranked_runs, "No completed training runs matched this execution."
+best_run = ranked_runs[0]
+winner = comparison.loc[
+    comparison["run_id"] == best_run.info.run_id
+].iloc[0].to_dict()
 (run_path / "winner.json").write_text(json.dumps(winner, indent=2), encoding="utf-8")
 print("Winner:", winner["model_type"])
 print("Accuracy:", winner["accuracy"])
 print("Source run:", winner["run_id"])
 ```
 
-`idxmax` selects the highest final test accuracy. Selection uses the explicitly named `test_accuracy` column. The `accuracy` key remains an identical compatibility value for verification. A tie picks the first row, Logistic Regression. `winner.json` passes the source run and saved model URI to the registration task; it does not retrain the model.
+`client.search_runs` is MLflow's built-in ranking API. We specify highest final `test_accuracy`, restrict eligibility to this execution's two completed run IDs, and request one result. Sorting `params.model_type` ascending breaks accuracy ties in favor of `LogisticRegressionSGD`. Pandas only retrieves the selected run's existing handoff row; it no longer ranks the models. The `accuracy` key remains an identical compatibility value for verification. `winner.json` passes the source run and saved model URI to registration without retraining. Logging alone does not automatically register or promote a winner; notebook 05 performs those explicit steps.
 
 **In MLflow:** return to Runs, tick the two rows with the same `workflow_run_id`, then click **Compare**. Scroll to Metrics to inspect final test accuracy, train/test loss, and duration. Collapsing Visualizations and Parameters makes the results table easier to show. The current completed example has approximately **0.833** test accuracy for SGD logistic regression and **0.900** for Random Forest, so Random Forest wins.
 

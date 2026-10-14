@@ -15,15 +15,29 @@ copy() starts each comparison row from its model references. update() adds store
 ## Select and save
 
 ```python
-winner_index = comparison["test_accuracy"].idxmax()
-winner = comparison.loc[winner_index].to_dict()
+run_filter = (
+    f"attributes.run_id IN ('{logistic_result['run_id']}', "
+    f"'{forest_result['run_id']}') AND attributes.status = 'FINISHED'"
+)
+assert logistic_run.info.experiment_id == forest_run.info.experiment_id
+ranked_runs = client.search_runs(
+    experiment_ids=[logistic_run.info.experiment_id],
+    filter_string=run_filter,
+    order_by=["metrics.test_accuracy DESC", "params.model_type ASC"],
+    max_results=1,
+)
+assert ranked_runs, "No completed training runs matched this execution."
+best_run = ranked_runs[0]
+winner = comparison.loc[
+    comparison["run_id"] == best_run.info.run_id
+].iloc[0].to_dict()
 (run_path / "winner.json").write_text(json.dumps(winner, indent=2), encoding="utf-8")
 print("Winner:", winner["model_type"])
 print("Accuracy:", winner["accuracy"])
 print("Source run:", winner["run_id"])
 ```
 
-idxmax selects the highest test_accuracy; a tie picks the first row, logistic regression. accuracy is an identical compatibility score used during verification. winner.json retains the model URI, source run, and execution identity for registration.
+MLflow's `client.search_runs` ranks the eligible runs by highest final `test_accuracy` and returns one result. The filter admits only this execution's two completed training run IDs, so an older or unrelated run cannot win. Sorting `params.model_type` ascending breaks ties in favor of `LogisticRegressionSGD`. Pandas retrieves the selected handoff row without ranking it. `accuracy` is an identical compatibility score used during verification. `winner.json` retains the model URI, source run, and execution identity for registration.
 
 ## Understand `client.get_run`
 
@@ -46,7 +60,7 @@ In this project, steps increase throughout each run, so the latest metric values
 
 The JSON result files supply the exact run IDs from this execution. We read those two IDs rather than searching by run name, because many executions can share the names `logistic-regression` and `random-forest`.
 
-The pandas `idxmax()` operation selects the winner in Python. MLflow stores the evidence used for that decision; it does not automatically choose a winner. This notebook reads MLflow records and writes `winner.json`; it creates no additional training run.
+MLflow supplies built-in comparison and ranking tools. Here we call its ranking API with our metric, eligible run IDs, and tie-break rule. Logging models alone does not automatically select, register, or promote a candidate. This notebook reads and ranks MLflow records and writes `winner.json`; it creates no additional training run. The next notebook explicitly registers the winner and assigns its alias.
 
 API reference: [MlflowClient.get_run](https://mlflow.org/docs/latest/api_reference/python_api/mlflow.client.html#mlflow.client.MlflowClient.get_run).
 

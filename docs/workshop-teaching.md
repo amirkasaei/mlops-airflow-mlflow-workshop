@@ -228,17 +228,22 @@ Both training tasks finishing successfully tells us that their code completed. W
 **Open code:** [notebook 04](../notebooks/04_compare_models.ipynb). Show `client.get_run(...)`, which retrieves each attempt's saved record, then:
 
 ```python
-winner_index = comparison["test_accuracy"].idxmax()
-winner = comparison.loc[winner_index].to_dict()
+ranked_runs = client.search_runs(
+    experiment_ids=[logistic_run.info.experiment_id],
+    filter_string=run_filter,
+    order_by=["metrics.test_accuracy DESC", "params.model_type ASC"],
+    max_results=1,
+)
+best_run = ranked_runs[0]
 ```
 
-Our selection rule is highest **final test accuracy**. A tie selects the first row, Logistic Regression. `winner.json` keeps the selected model URI and source run ID for the next task.
+MLflow's built-in search ranks the runs by **final test accuracy** and returns the top result. `run_filter` limits the query to this execution's two completed training run IDs, excluding older attempts. Sorting `model_type` ascending breaks ties in favor of Logistic Regression. `winner.json` keeps the selected model URI and source run ID for the next task.
 
 **Show in MLflow:** return to the experiment's **Runs** list. Select the two runs with the same `workflow_run_id` and click **Compare**. Show the final test accuracy, loss, and training duration.
 
 ![Final results compared side by side](images/mlflow-comparison.png)
 
-Read the live values rather than assuming the screenshot's results. MLflow supplies the records; our Python selection rule chooses the winner.
+Read the live values rather than assuming the screenshot's results. MLflow provides the comparison UI and ranking API; we supply the metric, eligible runs, and tie-break rule. Registration and assigning `candidate` are explicit steps in the next notebook, not automatic effects of logging.
 
 Preparation: [comparison and get_run](code-walkthrough/11-compare-models.md).
 
